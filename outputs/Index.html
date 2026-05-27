@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>💝 마음 X레이 병원</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--pink:#FF6B9D;--purple:#9B5DE5;--cyan:#00D4FF;--yellow:#FFD93D;}
+body{
+  background:linear-gradient(135deg,#FFE0EE 0%,#EDE0FF 50%,#E0EEFF 100%);
+  font-family:'Nanum Gothic',sans-serif;
+  min-height:100vh;overflow:hidden;user-select:none;touch-action:manipulation;
+}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;}
+.screen.active{display:flex;}
+
+/* ── WELCOME ── */
+#welcomeScreen{
+  background:linear-gradient(160deg,#FFF0F6,#EDE0FF,#E0F0FF);
+  text-align:center;padding:30px 20px;gap:0;
+}
+.stars-deco{position:absolute;width:100%;height:100%;top:0;pointer-events:none;overflow:hidden;}
+.star-item{position:absolute;animation:twinkle 3s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+
+.hospital-sign{
+  background:white;border-radius:30px;padding:24px 36px 20px;
+  box-shadow:0 8px 30px rgba(155,93,229,.18);margin-bottom:24px;
+  border:4px solid #F0D0FF;position:relative;z-index:1;
+}
+.hosp-icon{font-size:clamp(56px,12vw,80px);display:block;animation:heartbeat 1.5s ease-in-out infinite;}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.15)}28%{transform:scale(1)}}
+.hospital-title{
+  font-size:clamp(26px,6vw,42px);font-weight:800;
+  background:linear-gradient(90deg,#FF6B9D,#9B5DE5);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin:8px 0 4px;
+}
+.hospital-sub{font-size:clamp(14px,3vw,20px);color:#9B5DE5;font-weight:700;}
+
+.deco-row{display:flex;gap:14px;justify-content:center;margin-bottom:20px;font-size:clamp(28px,6vw,38px);}
+.welcome-msg{
+  font-size:clamp(15px,3.2vw,21px);color:#555;margin-bottom:28px;line-height:1.8;
+  position:relative;z-index:1;
+}
+.welcome-msg strong{color:#FF6B9D;}
+
+.start-btn{
+  background:linear-gradient(135deg,#FF6B9D,#FF2D6B);color:white;border:none;
+  border-radius:60px;padding:clamp(15px,3vw,20px) clamp(36px,8vw,64px);
+  font-size:clamp(22px,5vw,32px);font-weight:800;font-family:inherit;cursor:pointer;
+  box-shadow:0 8px 24px rgba(255,107,157,.45);
+  animation:jumpBtn 1.2s ease-in-out infinite;position:relative;z-index:1;
+}
+@keyframes jumpBtn{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.04)}}
+.start-btn:active{transform:scale(.94)!important;animation:none!important;}
+
+/* ── CAMERA SCREEN ── */
+#cameraScreen{background:#08101E;justify-content:flex-start;}
+
+.face-section{
+  position:relative;width:100%;flex:1;overflow:hidden;background:#000;
+  display:flex;align-items:center;justify-content:center;
+}
+#videoEl{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
+.face-frame{position:absolute;inset:0;border:3px solid rgba(0,212,255,.65);box-shadow:inset 0 0 40px rgba(0,212,255,.12);pointer-events:none;}
+.corner{position:absolute;width:22px;height:22px;border-color:#00D4FF;border-style:solid;}
+.corner.tl{top:8px;left:8px;border-width:3px 0 0 3px;}
+.corner.tr{top:8px;right:8px;border-width:3px 3px 0 0;}
+.corner.bl{bottom:8px;left:8px;border-width:0 0 3px 3px;}
+.corner.br{bottom:8px;right:8px;border-width:0 3px 3px 0;}
+.face-tag{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.65);color:#00D4FF;padding:5px 18px;
+  border-radius:20px;font-size:15px;font-weight:700;
+  border:1px solid rgba(0,212,255,.4);white-space:nowrap;z-index:5;
+}
+.no-cam{
+  position:absolute;inset:0;background:#000;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;text-align:center;padding:20px;
+}
+.no-cam .icon{font-size:48px;}
+.no-cam p{color:#888;font-size:16px;line-height:1.6;}
+
+.scan-divider{
+  width:100%;height:38px;flex-shrink:0;
+  background:linear-gradient(to bottom,#08101E,#0D1A30,#08101E);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.div-line{height:2px;flex:1;background:linear-gradient(to right,transparent,#00D4FF,transparent);}
+.div-label{color:#00D4FF;font-size:13px;font-weight:700;white-space:nowrap;letter-spacing:1px;text-shadow:0 0 8px rgba(0,212,255,.8);}
+
+.xray-section{
+  position:relative;width:100%;flex:1;background:#030A18;
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+}
+#xrayPreviewCanvas{max-width:100%;max-height:100%;}
+.xray-tag{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  background:rgba(0,20,50,.8);color:#00D4FF;padding:4px 16px;
+  border-radius:20px;font-size:14px;font-weight:700;
+  border:1px solid rgba(0,212,255,.35);white-space:nowrap;z-index:5;
+  animation:glowPulse 2s ease-in-out infinite;
+}
+@keyframes glowPulse{0%,100%{text-shadow:0 0 5px rgba(0,212,255,.5)}50%{text-shadow:0 0 16px rgba(0,212,255,1)}}
+.scan-line{
+  position:absolute;left:0;right:0;height:3px;
+  background:linear-gradient(to right,transparent,rgba(0,212,255,.8),transparent);
+  animation:scanAnim 2.5s linear infinite;pointer-events:none;top:0;
+}
+@keyframes scanAnim{0%{top:0%}100%{top:100%}}
+
+.capture-bar{
+  width:100%;height:80px;flex-shrink:0;
+  background:linear-gradient(to top,#04080F,#08101E);
+  display:flex;align-items:center;justify-content:center;
+}
+.capture-btn{
+  background:linear-gradient(135deg,#FF6B9D,#FF2D6B);color:white;
+  border:4px solid rgba(255,255,255,.9);border-radius:60px;
+  padding:12px 44px;font-size:clamp(20px,4.5vw,28px);font-weight:800;
+  font-family:inherit;cursor:pointer;box-shadow:0 4px 22px rgba(255,45,107,.55);
+}
+.capture-btn:active{transform:scale(.92);}
+
+/* ── FLASH ── */
+#flashOverlay{position:fixed;inset:0;background:white;opacity:0;pointer-events:none;z-index:900;transition:opacity .08s;}
+#flashOverlay.bang{opacity:1;}
+
+/* ── RESULT SCREEN ── */
+#resultScreen{
+  background:linear-gradient(160deg,#080F1C,#100826,#081820);
+  padding:16px 16px 24px;justify-content:flex-start;
+  overflow-y:auto;gap:14px;
+}
+.result-hdr{text-align:center;width:100%;flex-shrink:0;}
+.result-hdr h2{font-size:clamp(20px,4.5vw,30px);font-weight:800;color:#00D4FF;text-shadow:0 0 12px rgba(0,212,255,.7);}
+.result-badge{
+  display:inline-block;background:rgba(0,212,255,.12);
+  border:1.5px solid rgba(0,212,255,.35);border-radius:20px;
+  color:#00D4FF;font-size:12px;padding:3px 12px;margin-top:4px;
+}
+.result-img-wrap{
+  width:100%;max-width:460px;margin:0 auto;border-radius:20px;overflow:hidden;
+  box-shadow:0 8px 36px rgba(0,212,255,.28),0 0 0 3px rgba(0,212,255,.18);
+  flex-shrink:0;
+}
+#resultCanvas{width:100%;display:block;}
+
+.mood-card{
+  width:100%;max-width:460px;margin:0 auto;
+  background:rgba(255,255,255,.06);border:2px solid rgba(255,107,157,.35);
+  border-radius:22px;padding:18px 22px;text-align:center;flex-shrink:0;
+}
+.mood-emoji-big{font-size:clamp(44px,9vw,66px);}
+.mood-name-big{
+  font-size:clamp(24px,5.5vw,38px);font-weight:800;color:#FF6B9D;
+  margin:6px 0 4px;text-shadow:0 0 14px rgba(255,107,157,.6);
+}
+.mood-desc-txt{font-size:clamp(14px,2.8vw,18px);color:#ccc;line-height:1.6;}
+
+.prescription-box{
+  width:100%;max-width:460px;margin:0 auto;
+  background:linear-gradient(135deg,rgba(255,217,61,.09),rgba(255,107,157,.09));
+  border:2px dashed rgba(255,217,61,.45);
+  border-radius:18px;padding:14px 18px;text-align:center;flex-shrink:0;
+}
+.presc-title{font-size:14px;color:#FFD93D;font-weight:700;margin-bottom:5px;}
+.presc-txt{font-size:clamp(14px,3.2vw,19px);color:white;font-weight:700;line-height:1.7;white-space:pre-line;}
+
+.retry-btn{
+  background:linear-gradient(135deg,#9B5DE5,#7B3DBF);color:white;border:none;
+  border-radius:60px;padding:14px 50px;font-size:clamp(20px,4vw,26px);font-weight:800;
+  font-family:inherit;cursor:pointer;box-shadow:0 5px 20px rgba(155,93,229,.45);
+  width:100%;max-width:280px;flex-shrink:0;
+}
+.retry-btn:active{transform:scale(.94);}
+
+/* ── MUSIC BUTTON ── */
+.music-btn{
+  position:fixed;top:10px;right:10px;z-index:200;
+  width:50px;height:50px;border-radius:50%;border:none;cursor:pointer;
+  font-size:22px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.22);backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  box-shadow:0 2px 14px rgba(0,0,0,.22);
+  border:2px solid rgba(255,255,255,.4);
+  transition:transform .12s,background .2s;
+}
+.music-btn:active{transform:scale(.88);}
+.music-btn.off{background:rgba(80,80,80,.35);border-color:rgba(255,255,255,.2);}
+.music-btn .note-anim{
+  display:inline-block;
+  animation:noteBounce 0.8s ease-in-out infinite;
+}
+.music-btn.off .note-anim{animation:none;}
+@keyframes noteBounce{0%,100%{transform:rotate(-10deg) scale(1)}50%{transform:rotate(10deg) scale(1.15)}}
+</style>
+</head>
+<body>
+
+<!-- ═══ WELCOME ═══ -->
+<div id="welcomeScreen" class="screen active">
+  <div class="stars-deco" id="starsDeco"></div>
+  <div class="hospital-sign">
+    <span class="hosp-icon">💝</span>
+    <div class="hospital-title">마음 X레이 병원</div>
+    <div class="hospital-sub">내 마음이 어떤지 알아볼까요?</div>
+  </div>
+  <div class="deco-row">🩺 ✨ 🫀 ✨ 🩻</div>
+  <p class="welcome-msg">
+    카메라 앞에 서면<br>
+    <strong>내 마음속을 X레이로</strong> 찍어드려요!<br>
+    어떤 마음이 나올지 기대해 봐요 🌈
+  </p>
+  <button class="start-btn" onclick="startCamera()">📸 사진 찍으러 가기!</button>
+</div>
+
+<!-- ═══ CAMERA ═══ -->
+<div id="cameraScreen" class="screen">
+  <div class="face-section">
+    <video id="videoEl" autoplay playsinline muted></video>
+    <div class="face-frame">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+    </div>
+    <div class="face-tag">😊 얼굴을 여기에!</div>
+    <div class="no-cam" id="noCam">
+      <div class="icon">📷</div>
+      <p>카메라를 허용해 주세요!<br>브라우저 설정에서<br>카메라 접근을 허용하고 새로고침 해주세요</p>
+    </div>
+  </div>
+  <div class="scan-divider">
+    <div class="div-line"></div>
+    <div class="div-label">🩻 마음 X레이 스캔 중...</div>
+    <div class="div-line"></div>
+  </div>
+  <div class="xray-section">
+    <canvas id="xrayPreviewCanvas"></canvas>
+    <div class="xray-tag">🔬 흉부 X레이 촬영 준비</div>
+    <div class="scan-line"></div>
+  </div>
+  <div class="capture-bar">
+    <button class="capture-btn" onclick="capture()">📸 찰칵!</button>
+  </div>
+</div>
+
+<!-- ═══ RESULT ═══ -->
+<div id="resultScreen" class="screen">
+  <div class="result-hdr">
+    <h2>🔬 X레이 촬영 결과</h2>
+    <div class="result-badge">마음 병원 진단서</div>
+  </div>
+  <div class="result-img-wrap"><canvas id="resultCanvas"></canvas></div>
+  <div class="mood-card">
+    <div class="mood-emoji-big" id="moodEmoji"></div>
+    <div class="mood-name-big" id="moodName"></div>
+    <div class="mood-desc-txt" id="moodDesc"></div>
+  </div>
+  <div class="prescription-box">
+    <div class="presc-title">💊 마음 처방전</div>
+    <div class="presc-txt" id="prescTxt"></div>
+  </div>
+  <button class="retry-btn" onclick="retake()">🔄 다시 찍기!</button>
+</div>
+
+<div id="flashOverlay"></div>
+
+<!-- 음악 토글 버튼 (모든 화면 위에 떠있음) -->
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()" title="음악 켜기/끄기">
+  <span class="note-anim">🎵</span>
+</button>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   🎵 오디오 엔진 — BGM·SFX 완전 분리
+   하나의 AudioContext, 두 개의 독립 게인
+═══════════════════════════════════════════════════ */
+let _ac = null;           // 공유 AudioContext
+let _bgmGain = null;      // BGM 전용 볼륨 (0↔0.38)
+let _sfxGain = null;      // 효과음 전용 볼륨 (항상 1.0)
+let _bgmPlaying = false;
+let _bgmTimer  = null;
+
+/* AudioContext 초기화 (첫 사용자 터치 이후 호출) */
+function initAC() {
+  if (_ac) return _ac;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  _ac = new AC();
+
+  _bgmGain = _ac.createGain(); _bgmGain.gain.value = 0;
+  _bgmGain.connect(_ac.destination);
+
+  _sfxGain = _ac.createGain(); _sfxGain.gain.value = 1.0;
+  _sfxGain.connect(_ac.destination);
+
+  return _ac;
+}
+
+/* AudioContext resume (필수: iOS/Android autoplay 정책) */
+function ensureAC() {
+  const ac = initAC();
+  if (!ac) return null;
+  if (ac.state === 'suspended') ac.resume();
+  return ac;
+}
+
+/* ── 음표 주파수 계산 ── */
+function hz(name, oct) {
+  const s = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+  return 440 * Math.pow(2, (s[name] + (oct-4)*12 - 9) / 12);
+}
+
+/* ── 지브리풍 잔잔한 BGM (C장조, 72 BPM) ── */
+const BPM  = 72;
+const BEAT = 60 / BPM;
+
+// 전체 음역 선언 (3~5옥타브)
+const C3=hz('C',3),D3=hz('D',3),E3=hz('E',3),F3=hz('F',3),G3=hz('G',3),A3=hz('A',3),B3=hz('B',3);
+const C4=hz('C',4),D4=hz('D',4),E4=hz('E',4),F4=hz('F',4),G4=hz('G',4),A4=hz('A',4),B4=hz('B',4);
+const C5=hz('C',5),D5=hz('D',5),E5=hz('E',5),F5=hz('F',5),G5=hz('G',5),A5=hz('A',5),B5=hz('B',5);
+
+// 멜로디 (오른손 — 잔잔하고 흐르는 선율 48박)
+const MEL_SEQ = [
+  // A 악절 — 가볍게 시작
+  [E5,1],[D5,1],[C5,2],
+  [D5,1],[E5,1],[G5,2],
+  [F5,2],[E5,2],
+  [C5,4],
+  // B 악절 — 조금 높아짐
+  [G5,1],[F5,1],[E5,2],
+  [D5,2],[C5,2],
+  [E5,1],[G5,1],[A5,2],
+  [G5,4],
+  // C 악절 — 여운 있게 마무리
+  [E5,1],[D5,1],[C5,2],
+  [F5,2],[G5,2],
+  [A5,1],[G5,1],[E5,2],
+  [C5,4],
+];
+
+// 베이스 (왼손 — 낮고 따뜻한 반주 48박)
+const BASS_SEQ = [
+  [C3,2],[G3,2],[C3,2],[G3,2],
+  [F3,2],[C3,2],[C3,4],
+  [G3,2],[G3,2],[F3,2],[C3,2],
+  [F3,2],[G3,2],[G3,4],
+  [C3,2],[G3,2],[F3,4],
+  [F3,2],[G3,2],[C3,4],
+];
+
+// 하모니 (내성 — 부드러운 화음 48박)
+const HARM_SEQ = [
+  [G4,2],[E4,2],[F4,2],[G4,2],
+  [A4,2],[G4,2],[E4,4],
+  [B4,2],[G4,2],[A4,2],[F4,2],
+  [C5,2],[A4,2],[D4,4],
+  [G4,2],[E4,2],[A4,2],[C5,2],
+  [C5,2],[G4,2],[E4,4],
+];
+
+function schedNote(freq, startT, dur, type, vol, dest) {
+  if (!freq || !_ac || !dest) return;
+  const osc = _ac.createOscillator();
+  const g   = _ac.createGain();
+  const atk = 0.012;                        // 피아노 어택: 짧고 선명
+  const rel = Math.min(dur * 0.65, 1.0);   // 피아노 릴리즈: 긴 여운
+  osc.type = type;
+  osc.frequency.value = freq;
+  g.gain.setValueAtTime(0, startT);
+  g.gain.linearRampToValueAtTime(vol, startT + atk);
+  g.gain.exponentialRampToValueAtTime(vol * 0.30, startT + dur);
+  g.gain.linearRampToValueAtTime(0, startT + dur + rel);
+  osc.connect(g); g.connect(dest);
+  osc.start(startT); osc.stop(startT + dur + rel + 0.08);
+}
+
+function scheduleBGMLoop(startT) {
+  if (!_bgmPlaying || !_ac) return;
+  let mt = startT, bt = startT, ht = startT;
+  let totalBeats = 0;
+
+  MEL_SEQ.forEach(([f,b]) => {
+    schedNote(f, mt, b*BEAT*0.85, 'sine',     0.20, _bgmGain);
+    mt += b*BEAT; totalBeats += b;
+  });
+  BASS_SEQ.forEach(([f,b]) => {
+    schedNote(f, bt, b*BEAT*0.70, 'triangle', 0.09, _bgmGain);
+    bt += b*BEAT;
+  });
+  HARM_SEQ.forEach(([f,b]) => {
+    schedNote(f, ht, b*BEAT*0.80, 'sine',     0.07, _bgmGain);
+    ht += b*BEAT;
+  });
+
+  const loopSec = totalBeats * BEAT;
+  _bgmTimer = setTimeout(() => {
+    if (_bgmPlaying) scheduleBGMLoop(startT + loopSec);
+  }, (loopSec - 0.5) * 1000);
+}
+
+function startBGM() {
+  const ac = ensureAC(); if (!ac) return;
+  if (_bgmPlaying) return;
+  _bgmPlaying = true;
+  _bgmGain.gain.cancelScheduledValues(ac.currentTime);
+  _bgmGain.gain.setValueAtTime(0, ac.currentTime);
+  _bgmGain.gain.linearRampToValueAtTime(0.38, ac.currentTime + 1.8);
+  scheduleBGMLoop(ac.currentTime + 0.2);
+}
+
+function stopBGM() {
+  _bgmPlaying = false;
+  if (_bgmTimer) { clearTimeout(_bgmTimer); _bgmTimer = null; }
+  if (_ac && _bgmGain) {
+    _bgmGain.gain.cancelScheduledValues(_ac.currentTime);
+    _bgmGain.gain.setTargetAtTime(0, _ac.currentTime, 0.3);
+  }
+}
+
+function toggleMusic() {
+  const btn = document.getElementById('musicBtn');
+  if (_bgmPlaying) {
+    stopBGM();
+    btn.classList.add('off');
+    btn.innerHTML = '<span>🔇</span>';
+  } else {
+    startBGM();
+    btn.classList.remove('off');
+    btn.innerHTML = '<span class="note-anim">🎵</span>';
+  }
+}
+
+/* ── 📸 찰칵! 셔터 효과음 ── */
+function playShutter() {
+  const ac = ensureAC(); if (!ac) return;
+  const t = ac.currentTime;
+
+  function noiseBurst(startT, dur, hp, lp, vol) {
+    try {
+      const len = Math.max(1, Math.ceil(ac.sampleRate * dur));
+      const buf = ac.createBuffer(1, len, ac.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1);
+      const src = ac.createBufferSource(); src.buffer = buf;
+      const hpF = ac.createBiquadFilter(); hpF.type='highpass'; hpF.frequency.value=hp;
+      const lpF = ac.createBiquadFilter(); lpF.type='lowpass';  lpF.frequency.value=lp;
+      const g = ac.createGain();
+      g.gain.setValueAtTime(vol, startT);
+      g.gain.exponentialRampToValueAtTime(0.001, startT + dur);
+      src.connect(hpF); hpF.connect(lpF); lpF.connect(g); g.connect(_sfxGain);
+      src.start(startT);
+    } catch(e) {}
+  }
+
+  function oscThud(startT, f1, f2, dur, vol) {
+    try {
+      const osc = ac.createOscillator();
+      const g   = ac.createGain();
+      osc.frequency.setValueAtTime(f1, startT);
+      osc.frequency.exponentialRampToValueAtTime(f2, startT + dur);
+      g.gain.setValueAtTime(vol, startT);
+      g.gain.exponentialRampToValueAtTime(0.001, startT + dur);
+      osc.connect(g); g.connect(_sfxGain);
+      osc.start(startT); osc.stop(startT + dur + 0.01);
+    } catch(e) {}
+  }
+
+  // ① 찰— 미러 올라가는 소리
+  oscThud(t,       220, 35,  0.045, 0.60);
+  noiseBurst(t,    0.006, 1800, 8000, 0.90);
+  // ② —칵 셔터 블레이드 열림
+  noiseBurst(t+0.022, 0.004, 3500, 12000, 0.70);
+  // ③ 셔터 블레이드 닫힘
+  noiseBurst(t+0.040, 0.003, 3000, 10000, 0.50);
+  // ④ 미러 복귀
+  oscThud(t+0.060, 160, 28, 0.040, 0.35);
+  noiseBurst(t+0.060, 0.007, 800, 4000, 0.30);
+  // ⑤ 금속 공명
+  try {
+    const res = ac.createOscillator(), rg = ac.createGain();
+    res.type = 'sine'; res.frequency.value = 3200;
+    rg.gain.setValueAtTime(0.05, t+0.01);
+    rg.gain.exponentialRampToValueAtTime(0.001, t+0.15);
+    res.connect(rg); rg.connect(_sfxGain);
+    res.start(t+0.01); res.stop(t+0.16);
+  } catch(e) {}
+}
+
+/* ── 🎉 결과 등장 팡파르 ── */
+function playResultJingle() {
+  const ac = ensureAC(); if (!ac) return;
+  const t = ac.currentTime + 0.1;
+  const B = 0.11;
+  [[523.25,0],[659.25,1],[783.99,2],[1046.50,3]].forEach(([f,i]) => {
+    try {
+      const osc=ac.createOscillator(), g=ac.createGain();
+      osc.type='sine'; osc.frequency.value=f;
+      g.gain.setValueAtTime(0, t+i*B);
+      g.gain.linearRampToValueAtTime(0.25, t+i*B+0.025);
+      g.gain.exponentialRampToValueAtTime(0.001, t+i*B+0.2);
+      osc.connect(g); g.connect(_sfxGain);
+      osc.start(t+i*B); osc.stop(t+i*B+0.22);
+    } catch(e) {}
+  });
+  [[2093,0.06],[1568,0.13],[2093,0.32]].forEach(([f,d]) => {
+    try {
+      const o=ac.createOscillator(), g=ac.createGain();
+      o.type='sine'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.09,t+d); g.gain.exponentialRampToValueAtTime(0.001,t+d+0.08);
+      o.connect(g); g.connect(_sfxGain);
+      o.start(t+d); o.stop(t+d+0.09);
+    } catch(e) {}
+  });
+}
+
+/* ─── MOODS ─────────────────────────────────────── */
+const MOODS = [
+  {
+    name:'슬픈 마음', emoji:'😢',
+    heartColor:'#3399EE', glowColor:'rgba(51,153,238,0.55)',
+    desc:'마음에 파란 빗방울이 가득해요',
+    prescription:'친구랑 손잡고 같이 놀면\n금방 기분이 나아질 거예요! 💙',
+    draw:drawSad
+  },
+  {
+    name:'너무 신나는 마음', emoji:'🤩',
+    heartColor:'#FFD93D', glowColor:'rgba(255,217,61,0.55)',
+    desc:'마음에 반짝반짝 별빛이 가득해요',
+    prescription:'이 에너지로 오늘도\n신나게 뛰어 놀아요! ⭐',
+    draw:drawExcited
+  },
+  {
+    name:'놀란 마음', emoji:'😲',
+    heartColor:'#FF9F43', glowColor:'rgba(255,159,67,0.55)',
+    desc:'마음이 깜짝 놀라서 두근두근해요',
+    prescription:'숨을 크게 들이쉬고\n후—하— 해봐요! 🌬️',
+    draw:drawSurprised
+  },
+  {
+    name:'화난 마음', emoji:'😠',
+    heartColor:'#FF4757', glowColor:'rgba(255,71,87,0.55)',
+    desc:'마음 속에 불꽃이 타오르고 있어요',
+    prescription:'선생님께 이야기하거나\n쿠션을 꼭 안아봐요 🤗',
+    draw:drawAngry
+  },
+  {
+    name:'걱정되는 마음', emoji:'😰',
+    heartColor:'#A29BFE', glowColor:'rgba(162,155,254,0.55)',
+    desc:'마음에 걱정 구름이 둥둥 떠 있어요',
+    prescription:'선생님이나 엄마·아빠에게\n이야기해봐요! 🌤️',
+    draw:drawWorried
+  },
+  {
+    name:'무기력한 마음', emoji:'😴',
+    heartColor:'#A0A8B0', glowColor:'rgba(160,168,176,0.45)',
+    desc:'마음이 무겁고 꾸벅꾸벅 졸리네요',
+    prescription:'시원한 물 한 모금 마시고\n스트레칭 한번 해봐요! 💧',
+    draw:drawTired
+  },
+  {
+    name:'부끄러운 마음', emoji:'😊',
+    heartColor:'#FD79A8', glowColor:'rgba(253,121,168,0.55)',
+    desc:'마음이 발그레 빨개졌어요',
+    prescription:'부끄러운 게 당연해요!\n용기내면 잘 할 수 있어요 🌸',
+    draw:drawShy
+  },
+  {
+    name:'외로운 마음', emoji:'🥺',
+    heartColor:'#6C5CE7', glowColor:'rgba(108,92,231,0.5)',
+    desc:'마음이 혼자 있고 싶지 않아요',
+    prescription:'친구에게 먼저 다가가\n"같이 놀자!" 해봐요! 🤝',
+    draw:drawLonely
+  },
+  {
+    name:'무서운 마음', emoji:'😨',
+    heartColor:'#636E72', glowColor:'rgba(100,80,150,0.5)',
+    desc:'마음 속에 으스스한 그림자가 있어요',
+    prescription:'선생님 손을 꼭 잡아봐요!\n선생님이 항상 지켜줄게요 🤗',
+    draw:drawScared
+  }
+];
+
+/* BGM·SFX 엔진은 파일 상단에 정의됨 */
+
+/* ─── STATE ─────────────────────────────────────── */
+let currentMood      = null;
+let faceDataURL      = null;
+let videoStream      = null;
+let pvFrame          = 0;
+let pvRafId          = null;
+let captureInProgress = false;  // 이중 촬영 방지
+
+/* ─── STARS DECO ─────────────────────────────────── */
+(function(){
+  const cont = document.getElementById('starsDeco');
+  const items = ['⭐','🌟','✨','💫','🌸','🎀','💝','🌈','🦋','🩺'];
+  for(let i=0;i<16;i++){
+    const s = document.createElement('div');
+    s.className = 'star-item';
+    s.textContent = items[Math.floor(Math.random()*items.length)];
+    s.style.left = (Math.random()*88+2)+'%';
+    s.style.top  = (Math.random()*88+2)+'%';
+    s.style.animationDelay = (Math.random()*3)+'s';
+    s.style.fontSize = (16+Math.random()*18)+'px';
+    cont.appendChild(s);
+  }
+})();
+
+/* ─── SCREEN ─────────────────────────────────────── */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ─── CAMERA ─────────────────────────────────────── */
+async function startCamera(){
+  captureInProgress = false;
+
+  // ① 화면 전환
+  showScreen('cameraScreen');
+
+  // ② 오디오 초기화 (사용자 제스처 직후 — await 이전!)
+  ensureAC();
+  startBGM();
+  const mBtn = document.getElementById('musicBtn');
+  mBtn.classList.remove('off');
+  mBtn.innerHTML = '<span class="note-anim">🎵</span>';
+
+  // ③ X레이 프리뷰 캔버스 (레이아웃이 잡힌 뒤 크기 측정)
+  requestAnimationFrame(() => {
+    const pvC  = document.getElementById('xrayPreviewCanvas');
+    const sect = pvC.parentElement;
+    pvC.width  = sect.clientWidth  || window.innerWidth  || 400;
+    pvC.height = sect.clientHeight || Math.round(window.innerHeight * 0.35) || 280;
+    animatePv(pvC);
+  });
+
+  // ④ 카메라 버튼 초기화
+  setCaptureBtn(true);
+
+  // ⑤ 카메라 스트림 요청
+  const vid     = document.getElementById('videoEl');
+  const noCamEl = document.getElementById('noCam');
+  vid.style.display    = 'block';
+  noCamEl.style.display = 'none';
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showCamError('이 브라우저는 카메라를 지원하지 않아요.<br>Chrome 또는 Safari를 사용해주세요.');
+    return;
+  }
+
+  try {
+    // 전면 카메라 우선, 실패 시 기본 카메라
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width:{ideal:1280}, height:{ideal:720} },
+        audio: false
+      });
+    } catch(e1) {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
+    videoStream = stream;
+    vid.srcObject = stream;
+    await vid.play().catch(()=>{});   // 자동재생 보장
+
+  } catch(err) {
+    console.error('카메라 오류:', err.name, err.message);
+    let msg = '카메라를 열 수 없어요.';
+    if (err.name === 'NotAllowedError')  msg = '📷 카메라 권한을 허용해 주세요!<br>브라우저 주소창 옆 🔒 아이콘을 눌러 카메라를 허용하세요.';
+    if (err.name === 'NotFoundError')    msg = '카메라를 찾을 수 없어요.';
+    if (err.name === 'NotReadableError') msg = '카메라가 다른 앱에서 사용 중이에요.';
+    showCamError(msg);
+  }
+}
+
+function showCamError(msg) {
+  document.getElementById('videoEl').style.display = 'none';
+  const el = document.getElementById('noCam');
+  el.style.display = 'flex';
+  el.querySelector('p').innerHTML = msg;
+  setCaptureBtn(false);  // 카메라 없으면 버튼 비활성화
+}
+
+function setCaptureBtn(enabled) {
+  const btn = document.querySelector('.capture-btn');
+  if (!btn) return;
+  btn.disabled = !enabled;
+  btn.style.opacity = enabled ? '1' : '0.45';
+}
+
+/* ─── PREVIEW ANIMATION ──────────────────────────── */
+function animatePv(canvas){
+  if(pvRafId){ cancelAnimationFrame(pvRafId); pvRafId=null; }
+  const ctx = canvas.getContext('2d');
+  function loop(){
+    drawXrayBase(ctx, canvas.width, canvas.height, null, pvFrame++);
+    pvRafId = requestAnimationFrame(loop);
+  }
+  loop();
+}
+function stopPv(){
+  if(pvRafId){ cancelAnimationFrame(pvRafId); pvRafId=null; }
+}
+
+/* ─── CAPTURE ─────────────────────────────────────── */
+function capture(){
+  if(captureInProgress) return;   // 이중 촬영 방지
+
+  const vid = document.getElementById('videoEl');
+
+  // 카메라가 아직 준비되지 않은 경우 처리
+  if(!videoStream || vid.readyState < 2){
+    // readyState: 0=HAVE_NOTHING, 1=HAVE_METADATA, 2=HAVE_CURRENT_DATA
+    // 카메라가 준비됐을 때 재시도
+    vid.addEventListener('canplay', () => capture(), { once: true });
+    return;
+  }
+
+  captureInProgress = true;
+  setCaptureBtn(false);
+
+  // 효과음 + 플래시
+  playShutter();
+  doFlash();
+
+  // 마음 랜덤 선택
+  currentMood = MOODS[Math.floor(Math.random() * MOODS.length)];
+
+  // 얼굴 사진 캡처
+  const W = vid.videoWidth  || vid.clientWidth  || 640;
+  const H = vid.videoHeight || vid.clientHeight || 480;
+  const fc = document.createElement('canvas');
+  fc.width = W; fc.height = H;
+  const fx = fc.getContext('2d');
+
+  // 거울 반전 (셀피용)
+  fx.save();
+  fx.translate(W, 0);
+  fx.scale(-1, 1);
+  try {
+    fx.drawImage(vid, 0, 0, W, H);
+  } catch(e) {
+    console.warn('drawImage 실패:', e.message);
+    // 빈 배경으로 대체 (그래도 결과는 보여줌)
+    fx.fillStyle = '#222244';
+    fx.fillRect(0, 0, W, H);
+    fx.fillStyle = 'rgba(255,255,255,0.3)';
+    fx.font = `${Math.round(H*0.12)}px sans-serif`;
+    fx.textAlign = 'center';
+    fx.fillText('📷', W/2, H/2);
+  }
+  fx.restore();
+  faceDataURL = fc.toDataURL('image/jpeg', 0.92);
+
+  // 카메라 스트림 종료
+  if(videoStream) {
+    videoStream.getTracks().forEach(t => t.stop());
+    videoStream = null;
+  }
+  stopPv();
+
+  setTimeout(buildResult, 400);
+}
+
+/* ─── BUILD RESULT ───────────────────────────────── */
+function buildResult(){
+  showScreen('resultScreen');
+  const mood = currentMood;
+  const RC = document.getElementById('resultCanvas');
+  const W=460, H=680;
+  RC.width=W; RC.height=H;
+  const ctx = RC.getContext('2d');
+
+  const faceH = Math.round(H * 0.40);
+  const divH  = 28;
+  const xrayY = faceH + divH;
+  const xrayH = H - xrayY;
+
+  // 1. 얼굴 사진
+  const img = new Image();
+  img.onload = () => {
+    // face 영역에 cover fit
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0,0,W,faceH); ctx.clip();
+    const sc = Math.max(W / img.naturalWidth, faceH / img.naturalHeight);
+    const sw = img.naturalWidth * sc, sh = img.naturalHeight * sc;
+    ctx.drawImage(img, (W-sw)/2, (faceH-sh)/2, sw, sh);
+    ctx.restore();
+
+    // 2. 구분선
+    ctx.fillStyle='#08101E'; ctx.fillRect(0, faceH, W, divH);
+    const dg = ctx.createLinearGradient(0,0,W,0);
+    dg.addColorStop(0,'transparent'); dg.addColorStop(.5,'#00D4FF'); dg.addColorStop(1,'transparent');
+    ctx.fillStyle=dg; ctx.fillRect(0, faceH+divH/2-1, W, 2);
+    ctx.fillStyle='#00D4FF';
+    ctx.font='bold 13px Nanum Gothic,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🩻 마음 X레이', W/2, faceH+divH/2);
+
+    // 3. X레이 하단
+    ctx.save(); ctx.translate(0, xrayY);
+    drawXrayBase(ctx, W, xrayH, mood, 0);
+    ctx.restore();
+
+    // 4. 하단 마음 이름 배너
+    const lh = 52;
+    ctx.fillStyle='rgba(0,0,0,.6)'; ctx.fillRect(0, H-lh, W, lh);
+    ctx.font=`bold ${Math.round(W*0.065)}px Nanum Gothic,sans-serif`;
+    ctx.fillStyle=mood.heartColor;
+    ctx.shadowColor=mood.heartColor; ctx.shadowBlur=10;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(mood.emoji+' '+mood.name, W/2, H-lh/2);
+    ctx.shadowBlur=0;
+  };
+  img.onerror = () => {
+    // 사진 로드 실패해도 X레이는 그림
+    ctx.save(); ctx.translate(0, xrayY);
+    drawXrayBase(ctx, W, xrayH, mood, 0);
+    ctx.restore();
+  };
+  img.src = faceDataURL || '';
+
+  // 팡파르
+  setTimeout(playResultJingle, 180);
+
+  document.getElementById('moodEmoji').textContent = mood.emoji;
+  document.getElementById('moodName').textContent  = mood.name;
+  document.getElementById('moodDesc').textContent  = mood.desc;
+  document.getElementById('prescTxt').textContent  = mood.prescription;
+}
+
+/* ─── RETAKE ─────────────────────────────────────── */
+function retake(){
+  pvFrame = 0;
+  faceDataURL = null;
+  startCamera();
+}
+
+/* ─── FLASH ──────────────────────────────────────── */
+function doFlash(){
+  const el = document.getElementById('flashOverlay');
+  el.classList.add('bang');
+  setTimeout(() => el.classList.remove('bang'), 120);
+}
+
+/* ═══════════════════════════════════════════════════
+   X-RAY DRAWING
+═══════════════════════════════════════════════════ */
+function drawXrayBase(ctx, W, H, mood, frame){
+  // Background
+  ctx.fillStyle='#030A18';
+  ctx.fillRect(0,0,W,H);
+
+  // Scanlines
+  for(let y=0;y<H;y+=3){
+    ctx.fillStyle='rgba(0,50,120,.014)';
+    ctx.fillRect(0,y,W,1);
+  }
+
+  // Center glow
+  const cGlow = ctx.createRadialGradient(W/2,H*.38,0,W/2,H*.38,W*.5);
+  const gc = mood ? mood.glowColor : 'rgba(0,100,180,0.1)';
+  cGlow.addColorStop(0,gc.replace(/[\d.]+\)$/,'0.1)'));
+  cGlow.addColorStop(1,'transparent');
+  ctx.fillStyle=cGlow; ctx.fillRect(0,0,W,H);
+
+  const cx=W/2;
+
+  // ── SPINE vertebrae
+  for(let i=0;i<11;i++){
+    const sy=H*.09+i*H*.062;
+    const sw=W*.026+i*W*.0008;
+    ctx.fillStyle=`rgba(150,200,255,${Math.min(.3+i*.015,.5)})`;
+    ctx.strokeStyle=`rgba(190,225,255,${Math.min(.35+i*.015,.55)})`;
+    ctx.lineWidth=.8;
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(cx-sw,sy-H*.018,sw*2,H*.034,3);
+    else ctx.rect(cx-sw,sy-H*.018,sw*2,H*.034);
+    ctx.fill(); ctx.stroke();
+  }
+
+  // ── CLAVICLES
+  ctx.save();
+  ctx.strokeStyle='rgba(175,215,255,.72)';
+  ctx.lineWidth=Math.max(W*.010,2);
+  ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(cx-W*.04,H*.10);
+  ctx.bezierCurveTo(cx-W*.12,H*.08,cx-W*.22,H*.10,cx-W*.30,H*.155);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx+W*.04,H*.10);
+  ctx.bezierCurveTo(cx+W*.12,H*.08,cx+W*.22,H*.10,cx+W*.30,H*.155);
+  ctx.stroke();
+  ctx.restore();
+
+  // ── RIBS
+  const ribs=[
+    {y:.17,xf:.26,c:-.018},{y:.24,xf:.29,c:-.008},{y:.31,xf:.31,c:.000},
+    {y:.38,xf:.30,c:.012},{y:.45,xf:.27,c:.024},{y:.51,xf:.23,c:.034},
+  ];
+  ctx.save();
+  ctx.lineWidth=Math.max(W*.008,1.5);
+  ctx.lineCap='round';
+  ribs.forEach((r,i)=>{
+    const ry=H*r.y;
+    const al=(.55-i*.04);
+    ctx.strokeStyle=`rgba(155,205,255,${al})`;
+    ctx.beginPath();
+    ctx.moveTo(cx-W*.035,ry);
+    ctx.bezierCurveTo(cx-W*.11,ry+H*r.c,cx-W*(r.xf-.04),ry+H*(r.c+.025),cx-W*r.xf,ry+H*(r.c+.05));
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx+W*.035,ry);
+    ctx.bezierCurveTo(cx+W*.11,ry+H*r.c,cx+W*(r.xf-.04),ry+H*(r.c+.025),cx+W*r.xf,ry+H*(r.c+.05));
+    ctx.stroke();
+  });
+  ctx.restore();
+
+  // ── LUNG OUTLINES
+  ctx.save();
+  ctx.strokeStyle='rgba(90,150,210,.20)';
+  ctx.lineWidth=Math.max(W*.007,1.5);
+  ctx.beginPath();
+  ctx.ellipse(cx-W*.125,H*.34,W*.108,H*.195,-.06,0,Math.PI*2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx+W*.125,H*.34,W*.108,H*.195,.06,0,Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+
+  // ── HEART
+  const hx=cx-W*.04, hy=H*.31, hr=W*.095;
+
+  if(mood){
+    // glow aura
+    const hg=ctx.createRadialGradient(hx,hy,0,hx,hy,hr*2.6);
+    hg.addColorStop(0,mood.glowColor);
+    hg.addColorStop(1,'transparent');
+    ctx.fillStyle=hg;
+    ctx.beginPath(); ctx.arc(hx,hy,hr*2.6,0,Math.PI*2); ctx.fill();
+    // heart shape
+    drawHeart(ctx,hx,hy,hr,mood.heartColor,1.0);
+    // mood decoration
+    mood.draw(ctx,hx,hy,hr,W,H,frame);
+  } else {
+    // preview: pulsing outline
+    const pulse=.85+.15*Math.sin(frame*.08);
+    drawHeart(ctx,hx,hy,hr*pulse,'rgba(0,212,255,.5)',.5);
+    ctx.font=`bold ${Math.round(hr*1.0)}px sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle=`rgba(0,212,255,${.3+.3*Math.sin(frame*.1)})`;
+    ctx.fillText('?',hx,hy+hr*.1);
+  }
+
+  // ── Watermark
+  ctx.save();
+  ctx.font=`${Math.round(W*.025)}px Nanum Gothic,sans-serif`;
+  ctx.textAlign='left'; ctx.textBaseline='bottom';
+  ctx.fillStyle='rgba(0,212,255,.25)';
+  ctx.fillText('💝 마음 X레이 병원', W*.03, H*.97);
+  ctx.restore();
+}
+
+/* Heart shape helper */
+function drawHeart(ctx,x,y,r,color,alpha){
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.moveTo(x, y+r*.3);
+  ctx.bezierCurveTo(x,   y-r*.3, x-r*1.1, y-r*.3, x-r*1.1, y+r*.25);
+  ctx.bezierCurveTo(x-r*1.1, y+r*.75, x, y+r*1.2, x, y+r*1.35);
+  ctx.bezierCurveTo(x, y+r*1.2, x+r*1.1, y+r*.75, x+r*1.1, y+r*.25);
+  ctx.bezierCurveTo(x+r*1.1, y-r*.3, x, y-r*.3, x, y+r*.3);
+  ctx.fill();
+  ctx.restore();
+}
+
+/* ─── MOOD DECORATIONS ───────────────────────────── */
+
+// 1. 슬픈 마음
+function drawSad(ctx,hx,hy,hr,W,H,f){
+  const drops=[[-0.8,-0.2],[0.1,0.6],[0.7,0.1],[-0.3,1.0],[0.9,0.8]];
+  drops.forEach(([dx,dy],i)=>{
+    const tx=hx+dx*hr;
+    const ty=hy+dy*hr+((f*.5+i*17)%(hr*3));
+    ctx.save(); ctx.globalAlpha=.75; ctx.fillStyle='#88CCFF';
+    ctx.beginPath(); ctx.ellipse(tx,ty,hr*.09,hr*.14,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  });
+  // rain streaks
+  for(let i=0;i<7;i++){
+    const rx=hx+(i-3.5)*hr*.3;
+    const ry=hy-hr*1+((f*1.1+i*25)%(hr*4));
+    ctx.save(); ctx.globalAlpha=.18; ctx.strokeStyle='#4499DD'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(rx,ry); ctx.lineTo(rx-hr*.05,ry+hr*.38); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// 2. 신나는 마음
+function drawExcited(ctx,hx,hy,hr,W,H,f){
+  [0,72,144,216,288].forEach((a,i)=>{
+    const rad=(a+f*3)*Math.PI/180;
+    const dist=hr*(1.3+.2*Math.sin(f*.07+i));
+    drawStar5(ctx,hx+Math.cos(rad)*dist,hy+Math.sin(rad)*dist*.7,hr*.13,'#FFD93D',.9);
+  });
+  for(let i=0;i<6;i++){
+    const ang=(i*60+f*4)*Math.PI/180;
+    const r2=hr*(.85+.4*Math.sin(f*.1+i));
+    ctx.save(); ctx.globalAlpha=.75; ctx.fillStyle='#FFFFAA';
+    ctx.beginPath(); ctx.arc(hx+Math.cos(ang)*r2,hy+Math.sin(ang)*r2*.6,hr*.07,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawStar5(ctx,x,y,r,color,alpha){
+  ctx.save(); ctx.globalAlpha=alpha; ctx.fillStyle=color;
+  ctx.beginPath();
+  for(let i=0;i<5;i++){
+    const a1=(i*72-90)*Math.PI/180, a2=(i*72-90+36)*Math.PI/180;
+    i===0?ctx.moveTo(x+Math.cos(a1)*r,y+Math.sin(a1)*r):ctx.lineTo(x+Math.cos(a1)*r,y+Math.sin(a1)*r);
+    ctx.lineTo(x+Math.cos(a2)*r*.42,y+Math.sin(a2)*r*.42);
+  }
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+
+// 3. 놀란 마음
+function drawSurprised(ctx,hx,hy,hr,W,H,f){
+  for(let i=0;i<8;i++){
+    const ang=(i*45+f*3)*Math.PI/180;
+    const r1=hr*1.25, r2=hr*(1.65+.15*Math.sin(f*.12+i));
+    ctx.save(); ctx.strokeStyle='#FF9F43'; ctx.lineWidth=W*.007; ctx.globalAlpha=.62;
+    ctx.beginPath();
+    ctx.moveTo(hx+Math.cos(ang)*r1,hy+Math.sin(ang)*r1*.7);
+    ctx.lineTo(hx+Math.cos(ang)*r2,hy+Math.sin(ang)*r2*.7);
+    ctx.stroke(); ctx.restore();
+  }
+  ctx.save(); ctx.font=`bold ${Math.round(hr*1.0)}px sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle='#FFE0A0'; ctx.globalAlpha=.9;
+  ctx.fillText('!!',hx,hy-hr*1.85);
+  ctx.restore();
+}
+
+// 4. 화난 마음
+function drawAngry(ctx,hx,hy,hr,W,H,f){
+  // flames
+  [[-0.6,0.1],[0.1,-0.2],[0.7,0.2],[-0.1,0.6]].forEach(([fx,fy],i)=>{
+    const foff=Math.sin(f*.18+i*1.5)*hr*.12;
+    ctx.save(); ctx.globalAlpha=.68; ctx.fillStyle=i%2===0?'#FF4757':'#FFA502';
+    const bx=hx+fx*hr*1.2, by=hy+fy*hr*1.2;
+    ctx.beginPath();
+    ctx.moveTo(bx,by+hr*.45+foff);
+    ctx.bezierCurveTo(bx-hr*.22,by+hr*.08,bx+hr*.1,by-hr*.4,bx,by-hr*.62-foff);
+    ctx.bezierCurveTo(bx+hr*.1,by-hr*.08,bx+hr*.26,by+hr*.1,bx+hr*.22,by+hr*.45+foff);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  });
+  // lightning
+  [[hx-hr*1.65,hy-hr*.55],[hx+hr*1.35,hy-hr*.85]].forEach(([lx,ly])=>{
+    ctx.save(); ctx.strokeStyle='#FFDD57'; ctx.lineWidth=W*.008; ctx.globalAlpha=.85;
+    ctx.beginPath();
+    ctx.moveTo(lx,ly);
+    ctx.lineTo(lx+hr*.15,ly+hr*.3);
+    ctx.lineTo(lx-hr*.05,ly+hr*.3);
+    ctx.lineTo(lx+hr*.18,ly+hr*.72);
+    ctx.stroke(); ctx.restore();
+  });
+}
+
+// 5. 걱정되는 마음
+function drawWorried(ctx,hx,hy,hr,W,H,f){
+  ctx.save(); ctx.strokeStyle='#A29BFE'; ctx.lineWidth=W*.006; ctx.globalAlpha=.55;
+  ctx.beginPath();
+  for(let i=0;i<60;i++){
+    const a=(i/60)*Math.PI*4+f*.03;
+    const r=hr*(.18+i/60*.85);
+    const px=hx-hr+Math.cos(a)*r, py=hy-hr*.5+Math.sin(a)*r*.7;
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.font=`bold ${Math.round(hr*1.1)}px sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle='#C8B4FF'; ctx.globalAlpha=.85;
+  ctx.fillText('?',hx+hr*1.45,hy-hr*.85);
+  ctx.restore();
+}
+
+// 6. 무기력한 마음
+function drawTired(ctx,hx,hy,hr,W,H,f){
+  ['z','Z','Z'].forEach((z,i)=>{
+    const tx=hx+hr*(.85+i*.52);
+    const ty=hy-hr*(.65+i*.42)-((f*.4+i*20)%(hr*2.2));
+    ctx.save(); ctx.font=`bold ${Math.round(hr*(.48+i*.14))}px sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#C8D0D8'; ctx.globalAlpha=.6;
+    ctx.fillText(z,tx,ty); ctx.restore();
+  });
+  [[-0.7,.4],[0,.8],[0.7,.5]].forEach(([dx,dy])=>{
+    ctx.save(); ctx.strokeStyle='#909090'; ctx.lineWidth=W*.006; ctx.globalAlpha=.38;
+    ctx.beginPath();
+    ctx.moveTo(hx+dx*hr,hy+dy*hr-hr*.28);
+    ctx.bezierCurveTo(hx+dx*hr+hr*.1,hy+dy*hr,hx+dx*hr-hr*.1,hy+dy*hr+hr*.22,hx+dx*hr,hy+dy*hr+hr*.32);
+    ctx.stroke(); ctx.restore();
+  });
+}
+
+// 7. 부끄러운 마음
+function drawShy(ctx,hx,hy,hr,W,H,f){
+  [[-1,.3],[1,.3]].forEach(([bx,by])=>{
+    const g=ctx.createRadialGradient(hx+bx*hr,hy+by*hr,0,hx+bx*hr,hy+by*hr,hr*.55);
+    g.addColorStop(0,'rgba(255,140,140,.55)'); g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.ellipse(hx+bx*hr,hy+by*hr,hr*.55,hr*.38,0,0,Math.PI*2); ctx.fill();
+  });
+  [[hx-hr*1.55,hy-hr*.75],[hx+hr*1.45,hy-hr*1.05],[hx+hr*.05,hy-hr*2.0]].forEach(([fx,fy])=>{
+    drawFlower(ctx,fx,fy,hr*.22,'#FD79A8');
+  });
+}
+function drawFlower(ctx,x,y,r,color){
+  ctx.save(); ctx.globalAlpha=.82;
+  for(let i=0;i<5;i++){
+    const a=i*72*Math.PI/180;
+    ctx.fillStyle=color;
+    ctx.beginPath();
+    ctx.ellipse(x+Math.cos(a)*r*.8,y+Math.sin(a)*r*.8,r*.58,r*.36,a,0,Math.PI*2);
+    ctx.fill();
+  }
+  ctx.fillStyle='#FFD93D'; ctx.beginPath(); ctx.arc(x,y,r*.4,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// 8. 외로운 마음
+function drawLonely(ctx,hx,hy,hr,W,H,f){
+  ctx.save(); ctx.strokeStyle='rgba(108,92,231,.28)'; ctx.lineWidth=W*.005;
+  ctx.setLineDash([4,9]);
+  ctx.beginPath(); ctx.arc(hx,hy+hr*.2,hr*1.85,0,Math.PI*2); ctx.stroke();
+  ctx.setLineDash([]); ctx.restore();
+  [[hx-hr*2.3,hy-hr*1.2],[hx+hr*2.1,hy-hr*.85],[hx-hr*1.9,hy+hr*1.35],
+   [hx+hr*1.6,hy+hr*1.6],[hx+hr*.05,hy-hr*2.3]].forEach(([sx,sy])=>{
+    const p=.4+.4*Math.sin(f*.05+sx*.01);
+    ctx.save(); ctx.globalAlpha=p*.65; ctx.fillStyle='#C8B4FF';
+    ctx.beginPath(); ctx.arc(sx,sy,hr*.1,0,Math.PI*2); ctx.fill(); ctx.restore();
+  });
+}
+
+// 9. 무서운 마음
+function drawScared(ctx,hx,hy,hr,W,H,f){
+  const gx=hx+hr*.3, gy=hy-hr*1.4, gr=hr*.55;
+  const sw=Math.sin(f*.08)*gr*.18;
+  ctx.save(); ctx.globalAlpha=.52; ctx.fillStyle='#8090A0';
+  ctx.beginPath();
+  ctx.arc(gx+sw,gy,gr,Math.PI,0);
+  ctx.lineTo(gx+sw+gr,gy+gr*.9);
+  ctx.bezierCurveTo(gx+sw+gr*.62,gy+gr*.5,gx+sw+gr*.22,gy+gr*1.12,gx+sw,gy+gr*.72);
+  ctx.bezierCurveTo(gx+sw-gr*.22,gy+gr*1.12,gx+sw-gr*.62,gy+gr*.5,gx+sw-gr,gy+gr*.9);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#06101E'; ctx.globalAlpha=.92;
+  ctx.beginPath(); ctx.ellipse(gx+sw-gr*.3,gy-gr*.05,gr*.17,gr*.22,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(gx+sw+gr*.3,gy-gr*.05,gr*.17,gr*.22,0,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+  for(let i=0;i<6;i++){
+    const ang=(i*60+f*4)*Math.PI/180;
+    ctx.save(); ctx.strokeStyle='#8080AA'; ctx.lineWidth=W*.004; ctx.globalAlpha=.28;
+    ctx.beginPath();
+    ctx.moveTo(hx+Math.cos(ang)*hr*1.1,hy+Math.sin(ang)*hr*.8);
+    ctx.lineTo(hx+Math.cos(ang)*hr*1.55,hy+Math.sin(ang)*hr*1.25);
+    ctx.stroke(); ctx.restore();
+  }
+}
+</script>
+</body>
+</html>
